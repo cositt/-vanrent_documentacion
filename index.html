@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guía de Uso — Sunset Rent · Vehicle Rental (Odoo 19)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <style>
+    :root {
+      --sidebar-bg: #0f172a;
+      --sidebar-border: rgba(255,255,255,0.07);
+      --sidebar-text: #94a3b8;
+      --sidebar-hover: rgba(255,255,255,0.06);
+      --accent: #f97316;
+      --accent-dim: rgba(249,115,22,0.12);
+      --accent-light: #fff7ed;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+      --sidebar-w: 272px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Sidebar ─────────────────────────────── */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--sidebar-w);
+      height: 100vh;
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 200;
+      transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    }
+
+    .sidebar-header {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid var(--sidebar-border);
+      flex-shrink: 0;
+    }
+
+    .sidebar-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f1f5f9;
+      line-height: 1.3;
+    }
+
+    .sidebar-sub {
+      font-size: 11.5px;
+      color: #475569;
+      margin-top: 3px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 0 20px;
+      scrollbar-width: thin;
+      scrollbar-color: #1e293b transparent;
+    }
+
+    .sidebar-nav::-webkit-scrollbar { width: 4px; }
+    .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-nav::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
+
+    .nav-section {
+      padding: 14px 20px 5px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 7px 20px;
+      color: var(--sidebar-text);
+      font-size: 13.5px;
+      line-height: 1.45;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: var(--sidebar-hover);
+      color: #cbd5e1;
+    }
+
+    .nav-item.active {
+      background: var(--accent-dim);
+      border-left-color: var(--accent);
+      color: #fed7aa;
+      font-weight: 500;
+    }
+
+    /* ── Overlay (mobile) ──────────────────── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 199;
+      backdrop-filter: blur(2px);
+    }
+
+    /* ── Main ────────────────────────────────── */
+    .main {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Topbar ──────────────────────────────── */
+    .topbar {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      width: 32px;
+      height: 32px;
+    }
+
+    .hamburger span {
+      display: block;
+      height: 2px;
+      background: var(--text);
+      border-radius: 1px;
+      transition: all .25s;
+    }
+
+    .breadcrumb {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .breadcrumb b {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill {
+      background: #f1f5f9;
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    /* ── Content ─────────────────────────────── */
+    .content-wrap {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      padding: 0 40px 60px;
+      background: white;
+    }
+
+    .content {
+      width: 100%;
+      max-width: 820px;
+      padding-top: 44px;
+    }
+
+    /* ── Markdown styles ─────────────────────── */
+    .content h1 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 4px;
+      line-height: 1.25;
+    }
+
+    .content h1 + p, .content h1 + hr {
+      margin-top: 0;
+    }
+
+    .content h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 2.2em 0 .7em;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .content h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #334155;
+      margin: 1.75em 0 .5em;
+    }
+
+    .content h4 {
+      font-size: .95rem;
+      font-weight: 600;
+      color: #475569;
+      margin: 1.4em 0 .4em;
+    }
+
+    .content p {
+      margin-bottom: .95em;
+      line-height: 1.78;
+      color: #374151;
+    }
+
+    .content ul, .content ol {
+      margin: .65em 0 .85em 1.6em;
+    }
+
+    .content li {
+      margin-bottom: .35em;
+      line-height: 1.7;
+      color: #374151;
+    }
+
+    .content strong { font-weight: 700; color: #1e293b; }
+
+    /* Tables */
+    .content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.4em 0;
+      font-size: 13.5px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px var(--border);
+    }
+
+    .content th {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .3px;
+      white-space: nowrap;
+    }
+
+    .content td {
+      padding: 9px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+      line-height: 1.6;
+    }
+
+    .content tr:nth-child(even) td { background: #f8fafc; }
+    .content tr:last-child td { border-bottom: none; }
+
+    /* Code */
+    .content pre {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 20px 22px;
+      overflow-x: auto;
+      margin: 1.5em 0;
+    }
+
+    .content pre code {
+      background: none !important;
+      color: #e2e8f0;
+      font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+      font-size: 13px;
+      padding: 0;
+    }
+
+    .content code {
+      background: #f1f5f9;
+      color: #be123c;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+      font-size: .865em;
+      word-break: break-all;
+    }
+
+    /* Blockquotes */
+    .content blockquote {
+      border-left: 4px solid var(--accent);
+      margin: 1.4em 0;
+      padding: 14px 18px;
+      background: var(--accent-light);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .content blockquote p {
+      margin: 0;
+      color: #9a3412;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .content blockquote strong { color: #7c2d12; }
+
+    /* Links */
+    .content a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .content a:hover {
+      text-decoration: underline;
+    }
+
+    /* HR */
+    .content hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2em 0;
+    }
+
+    /* ── Loading / Error ─────────────────────── */
+    .state-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      gap: 14px;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-icon { font-size: 2.5rem; }
+
+    /* ── Chapter nav footer ──────────────────── */
+    .chapter-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 3.5em;
+      padding-top: 2em;
+      border-top: 1px solid var(--border);
+      gap: 12px;
+    }
+
+    .chapter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 18px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      text-decoration: none;
+    }
+
+    .chapter-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      text-decoration: none;
+    }
+
+    .chapter-btn.ghost { opacity: 0; pointer-events: none; }
+
+    /* ── Mobile ──────────────────────────────── */
+    @media (max-width: 800px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .overlay.open { display: block; }
+      .main { margin-left: 0; }
+      .topbar { padding: 0 16px; }
+      .hamburger { display: flex; }
+      .content-wrap { padding: 0 16px 48px; }
+      .content { padding-top: 28px; }
+      .content table { font-size: 12.5px; }
+      .content th, .content td { padding: 8px 12px; }
+    }
+
+    /* ── Print ───────────────────────────────── */
+    @media print {
+      .sidebar, .topbar, .chapter-nav { display: none; }
+      .main { margin-left: 0; }
+      .content-wrap { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-badge">Sunset Rent</div>
+    <div class="sidebar-title">Guía de Uso</div>
+    <div class="sidebar-sub">Vehicle Rental · Odoo 19</div>
+  </div>
+  <div class="sidebar-nav" id="nav-items"></div>
+</nav>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="breadcrumb">
+        Sunset Rent &rsaquo; <b id="bc-title">Guía de Uso</b>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="pill">Odoo 19 Enterprise</span>
+    </div>
+  </header>
+
+  <div class="content-wrap">
+    <article class="content" id="content">
+      <div class="state-box">
+        <div class="spinner"></div>
+        <span>Cargando guía…</span>
+      </div>
+    </article>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+<script>
+// ── Chapter manifest ──────────────────────────────
+const CHAPTERS = [
+  { file: 'README.md',                           title: 'Índice General',                     section: null },
+  { file: '01-introduccion.md',                  title: '01 · Introducción',                  section: 'Contenido' },
+  { file: '02-panel-y-disponibilidad.md',        title: '02 · Panel y Disponibilidad',        section: 'Contenido' },
+  { file: '03-flota-y-vehiculos.md',             title: '03 · Flota y Vehículos',             section: 'Contenido' },
+  { file: '04-clientes.md',                      title: '04 · Clientes',                      section: 'Contenido' },
+  { file: '05-consultas-web-y-leads.md',         title: '05 · Consultas Web y Leads',         section: 'Contenido' },
+  { file: '06-reservas.md',                      title: '06 · Reservas',                      section: 'Contenido' },
+  { file: '07-contratos.md',                     title: '07 · Contratos',                     section: 'Contenido' },
+  { file: '08-tarifas-seguros-depositos.md',     title: '08 · Tarifas, Seguros y Depósitos',  section: 'Contenido' },
+  { file: '09-pagos-y-redsys.md',               title: '09 · Pagos y Redsys',                section: 'Contenido' },
+  { file: '10-mantenimiento-y-sustituciones.md', title: '10 · Mantenimiento y Sustituciones', section: 'Contenido' },
+  { file: '11-danos-y-rayones.md',               title: '11 · Daños y Rayones',               section: 'Contenido' },
+  { file: '12-devolucion-y-facturacion.md',      title: '12 · Devolución y Facturación',      section: 'Contenido' },
+  { file: '13-portal-web-publico.md',            title: '13 · Portal Web Público',            section: 'Contenido' },
+  { file: '14-emails-y-reportes.md',             title: '14 · Emails y Reportes',             section: 'Contenido' },
+  { file: '15-configuracion.md',                 title: '15 · Configuración',                 section: 'Contenido' },
+  { file: '16-solucion-de-problemas.md',         title: '16 · Solución de Problemas',         section: 'Contenido' },
+];
+
+let currentFile = null;
+
+// ── Marked config ──────────────────────────────────
+const renderer = new marked.Renderer();
+
+renderer.heading = function({ text, depth }) {
+  const id = text
+    .toLowerCase()
+    .replace(/[áàâä]/g, 'a').replace(/[éèêë]/g, 'e')
+    .replace(/[íìîï]/g, 'i').replace(/[óòôö]/g, 'o')
+    .replace(/[úùûü]/g, 'u').replace(/ñ/g, 'n')
+    .replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
+  return `<h${depth} id="${id}">${text}</h${depth}>\n`;
+};
+
+// Remove navigation links that appear in .md files (← Volver, Siguiente →)
+renderer.paragraph = function({ text }) {
+  // Hide the bottom nav paragraphs (← / →) — they're replaced by chapter-nav buttons
+  if (/^(\[←[^\]]*\]|\[→[^\]]*\]|←\s|→\s)/.test(text.trim())) return '';
+  return `<p>${text}</p>\n`;
+};
+
+marked.use({ renderer, gfm: true, breaks: false });
+
+// ── Sidebar builder ────────────────────────────────
+function buildSidebar() {
+  const nav = document.getElementById('nav-items');
+  let html = '';
+  let lastSection = undefined;
+
+  for (const ch of CHAPTERS) {
+    if (ch.section !== lastSection) {
+      if (ch.section) html += `<div class="nav-section">${ch.section}</div>`;
+      lastSection = ch.section;
+    }
+    html += `<div class="nav-item" data-file="${ch.file}" onclick="navigate('${ch.file}')">${ch.title}</div>`;
+  }
+
+  nav.innerHTML = html;
+}
+
+// ── Navigation ──────────────────────────────────────
+function navigate(file, anchor) {
+  const hash = anchor ? `${file}#${anchor}` : file;
+  window.location.hash = hash;
+}
+
+async function loadPage(file, anchor) {
+  if (file === currentFile && !anchor) return;
+  currentFile = file;
+
+  // Active nav item
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.file === file);
+  });
+
+  // Breadcrumb
+  const ch = CHAPTERS.find(c => c.file === file);
+  document.getElementById('bc-title').textContent = ch ? ch.title : file;
+  document.title = (ch ? ch.title + ' — ' : '') + 'Guía de Uso · Sunset Rent';
+
+  // Loading state
+  const content = document.getElementById('content');
+  content.innerHTML = `<div class="state-box"><div class="spinner"></div><span>Cargando…</span></div>`;
+
+  try {
+    const res = await fetch('./' + file);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const md = await res.text();
+
+    content.innerHTML = marked.parse(md);
+
+    // Intercept .md links → SPA navigation
+    content.querySelectorAll('a[href]').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      const isMd = /\.md(#|$)/.test(href) || href === './README.md';
+      if (isMd && !href.startsWith('http')) {
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          const [mdFile, anch] = href.replace('./', '').split('#');
+          navigate(mdFile, anch || null);
+        });
+      } else if (href.startsWith('http')) {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener');
+      }
+    });
+
+    // Syntax highlight
+    if (window.hljs) {
+      content.querySelectorAll('pre code').forEach(b => hljs.highlightElement(b));
+    }
+
+    // Chapter prev/next buttons
+    const idx = CHAPTERS.findIndex(c => c.file === file);
+    const prev = idx > 0 ? CHAPTERS[idx - 1] : null;
+    const next = idx < CHAPTERS.length - 1 ? CHAPTERS[idx + 1] : null;
+
+    const navEl = document.createElement('div');
+    navEl.className = 'chapter-nav';
+    navEl.innerHTML = `
+      ${prev
+        ? `<button class="chapter-btn" onclick="navigate('${prev.file}')">← ${prev.title}</button>`
+        : `<span class="chapter-btn ghost">.</span>`}
+      ${next
+        ? `<button class="chapter-btn" onclick="navigate('${next.file}')">${next.title} →</button>`
+        : `<span class="chapter-btn ghost">.</span>`}
+    `;
+    content.appendChild(navEl);
+
+    // Scroll
+    if (anchor) {
+      const el = document.getElementById(anchor);
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+      else window.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
+
+    closeSidebar();
+
+  } catch (err) {
+    content.innerHTML = `
+      <div class="state-box">
+        <div class="error-icon">⚠️</div>
+        <strong>No se pudo cargar el archivo</strong>
+        <code>${file}</code>
+        <p style="font-size:13px; text-align:center; max-width:380px; line-height:1.6">
+          En <strong>GitHub Pages</strong> esto funciona correctamente.<br>
+          Para previsualizar en local, usa un servidor web:
+          <code>npx serve .</code> o <code>python3 -m http.server</code>
+        </p>
+      </div>`;
+  }
+}
+
+// ── Routing ─────────────────────────────────────────
+function resolveHash() {
+  const raw = window.location.hash.replace('#', '') || 'README.md';
+  const [file, anchor] = raw.split('#');
+  const validFile = CHAPTERS.find(c => c.file === file) ? file : 'README.md';
+  loadPage(validFile, anchor || null);
+}
+
+window.addEventListener('hashchange', resolveHash);
+
+// ── Sidebar toggle ───────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ── Init ─────────────────────────────────────────────
+buildSidebar();
+resolveHash();
+</script>
+</body>
+</html>
